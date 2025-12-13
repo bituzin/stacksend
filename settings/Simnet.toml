@@ -1,0 +1,8 @@
+[manifest]
+name = "stacksend"
+[accounts.deployer]
+mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+balance = 1000000000000
+[accounts.wallet_1]
+mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrong"
+balance = 1000000000000
