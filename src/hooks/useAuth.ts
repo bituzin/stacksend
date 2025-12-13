@@ -34,12 +34,21 @@ export const useAuth = () => {
             if (isConnected()) {
                 const data = getLocalStorage() as StoredAddresses | null;
                 if (data?.addresses?.stx?.[0]) {
+                    const address = data.addresses.stx[0].address;
                     setAuthState({
                         isAuthenticated: true,
-                        stxAddress: data.addresses.stx[0].address,
+                        stxAddress: address,
                         btcAddress: data.addresses.btc?.[0]?.address || null,
                         publicKey: data.addresses.stx[0].publicKey || null,
                     });
+
+                    // Auto-detect network from address prefix
+                    // ST = testnet, SP = mainnet
+                    if (address.startsWith('ST')) {
+                        setNetwork(createNetwork('testnet'));
+                    } else if (address.startsWith('SP')) {
+                        setNetwork(createNetwork('mainnet'));
+                    }
                 }
             }
         };
@@ -57,12 +66,20 @@ export const useAuth = () => {
             const data = getLocalStorage() as StoredAddresses | null;
 
             if (data?.addresses?.stx?.[0]) {
+                const address = data.addresses.stx[0].address;
                 setAuthState({
                     isAuthenticated: true,
-                    stxAddress: data.addresses.stx[0].address,
+                    stxAddress: address,
                     btcAddress: data.addresses.btc?.[0]?.address || null,
                     publicKey: data.addresses.stx[0].publicKey || null,
                 });
+
+                // Auto-detect network from address prefix
+                if (address.startsWith('ST')) {
+                    setNetwork(createNetwork('testnet'));
+                } else if (address.startsWith('SP')) {
+                    setNetwork(createNetwork('mainnet'));
+                }
             }
 
             return response;
