@@ -60,7 +60,7 @@ function App() {
       <header
         className="sticky top-0 z-50 backdrop-blur-md border-b"
         style={{
-          backgroundColor: 'rgba(var(--bg-secondary-rgb, 255, 255, 255), 0.8)',
+          backgroundColor: 'var(--bg-header)',
           borderColor: 'var(--border-color)'
         }}
       >
