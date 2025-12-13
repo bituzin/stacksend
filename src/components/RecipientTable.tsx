@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Plus, Trash2, Send, Loader2, Coins, DollarSign } from 'lucide-react';
 import { request } from '@stacks/connect';
-import { Cl } from '@stacks/transactions';
+import { Cl, Pc } from '@stacks/transactions';
 import { useAuth } from '../hooks/useAuth';
 import { validateRecipient } from '../utils/validation';
 import { PasteModal } from './PasteModal';
@@ -76,10 +76,11 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
             let functionArgs: any[];
 
             if (mode === 'stx') {
+                // Convert STX to microSTX (1 STX = 1,000,000 microSTX)
                 const recipientTuples = data.recipients.map(r =>
                     Cl.tuple({
                         to: Cl.principal(r.to),
-                        ustx: Cl.uint(Number(r.amount))
+                        ustx: Cl.uint(Math.floor(Number(r.amount) * 1_000_000))
                     })
                 );
                 functionArgs = [Cl.list(recipientTuples)];
@@ -108,11 +109,22 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
                 ? contractAddress.replace('::', '.')
                 : contractAddress;
 
+            // Calculate total amount for post-conditions (in microSTX)
+            const totalAmountMicroStx = Math.floor(
+                data.recipients.reduce((sum, r) => sum + Number(r.amount), 0) * 1_000_000
+            );
+
+            // Build post-conditions - allow the sender to send up to totalAmount STX
+            const postConditions = mode === 'stx'
+                ? [Pc.principal(stxAddress!).willSendLte(totalAmountMicroStx).ustx()]
+                : [];
+
             const response = await request('stx_callContract', {
                 contract: formattedContract as `${string}.${string}`,
                 functionName: functionName,
                 functionArgs: functionArgs,
                 network: networkName,
+                postConditions: postConditions,
             });
 
             if (response && 'txid' in response) {
@@ -211,7 +223,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
                                 className="text-left text-sm font-medium px-4 py-3 w-36"
                                 style={{ color: 'var(--text-secondary)' }}
                             >
-                                Amount
+                                Amount ({mode === 'stx' ? 'STX' : 'Tokens'})
                             </th>
                             <th className="w-12"></th>
                         </tr>
@@ -228,7 +240,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
                                 <td className="px-4 py-2">
                                     <input
                                         {...register(`recipients.${index}.to`)}
-                                        placeholder="SP... or SM..."
+                                        placeholder="SP... or ST..."
                                         className="w-full py-2 bg-transparent outline-none font-mono text-sm"
                                         style={{ color: 'var(--text-primary)' }}
                                         onBlur={(e) => validateRecipient(e.target.value, watch(`recipients.${index}.amount`))}
@@ -238,7 +250,8 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
                                     <input
                                         type="number"
                                         {...register(`recipients.${index}.amount`)}
-                                        placeholder="0"
+                                        placeholder="0.001"
+                                        step="any"
                                         className="w-full py-2 bg-transparent outline-none text-sm"
                                         style={{ color: 'var(--text-primary)' }}
                                         min="0"
@@ -280,7 +293,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
                     {fields.length} / {maxRecipients} recipients
                 </span>
                 <span className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
-                    Total: {total.toLocaleString()} {mode === 'stx' ? 'microSTX' : 'tokens'}
+                    Total: {total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 6 })} {mode === 'stx' ? 'STX' : 'tokens'}
                 </span>
             </div>
 
