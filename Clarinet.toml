@@ -1,0 +1,17 @@
+[project]
+name = "stacksend"
+description = "Multisend DApp"
+authors = []
+telemetry = true
+cache_dir = "./.cache"
+requirements = []
+[contracts.sip-010-trait-ft-standard]
+path = "contracts/traits/sip-010-trait-ft-standard.clar"
+clarity_version = 2
+epoch = 3.0
+
+[contracts.multisend]
+path = "contracts/multisend.clar"
+clarity_version = 4
+epoch = 3.3
+depends_on = ["sip-010-trait-ft-standard"]
