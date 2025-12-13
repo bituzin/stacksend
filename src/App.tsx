@@ -4,14 +4,18 @@ import { WalletConnect } from './components/WalletConnect';
 import { NetworkToggle } from './components/NetworkToggle';
 import { PlanSelector } from './components/PlanSelector';
 import { useAuth } from './hooks/useAuth';
-import { CONTRACT_ADDRESS } from './utils/constants';
+import { getContractAddress } from './utils/constants';
 import { Sun, Moon, LogOut, Layers, Home } from 'lucide-react';
 
 function App() {
   const [theme, setTheme] = useState('light');
   const [maxRecipients, setMaxRecipients] = useState(5);
   const [showLanding, setShowLanding] = useState(true);
-  const { isAuthenticated, stxAddress, disconnect } = useAuth();
+  const { isAuthenticated, stxAddress, disconnect, network } = useAuth();
+
+  // Determine if we're on mainnet based on network chainId
+  const isMainnet = network?.chainId !== 2147483648; // testnet chainId
+  const contractAddress = getContractAddress(isMainnet);
 
   useEffect(() => {
     const saved = localStorage.getItem('theme') ||
@@ -152,7 +156,7 @@ function App() {
 
         {/* Recipient Table */}
         <div className="card" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-          <RecipientTable contractAddress={CONTRACT_ADDRESS} maxRecipients={maxRecipients} />
+          <RecipientTable contractAddress={contractAddress} maxRecipients={maxRecipients} />
         </div>
       </main>
 

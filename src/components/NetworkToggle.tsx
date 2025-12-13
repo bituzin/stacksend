@@ -1,37 +1,72 @@
 import { useState } from 'react';
 import { createNetwork } from '@stacks/network';
 import { useAuth } from '../hooks/useAuth';
-import { Globe, TestTube } from 'lucide-react';
+import { Globe, TestTube, AlertCircle } from 'lucide-react';
 
 export const NetworkToggle: React.FC = () => {
-    const { setNetwork } = useAuth();
-    const [isMainnet, setIsMainnet] = useState(true);
+    const { setNetwork, network } = useAuth();
+    const [isMainnet, setIsMainnet] = useState(network?.chainId !== 2147483648);
+    const [showAlert, setShowAlert] = useState(false);
 
     const toggle = () => {
-        const newNetwork = isMainnet ? createNetwork('testnet') : createNetwork('mainnet');
+        const newIsMainnet = !isMainnet;
+        const targetNetwork = newIsMainnet ? 'mainnet' : 'testnet';
+
+        // Update local state
+        const newNetwork = createNetwork(targetNetwork);
         setNetwork(newNetwork);
-        setIsMainnet(!isMainnet);
+        setIsMainnet(newIsMainnet);
+
+        // Show alert to remind user to switch in their wallet
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 5000);
     };
 
     return (
-        <button
-            onClick={toggle}
-            className="btn-ghost text-sm"
-            style={{
-                color: isMainnet ? 'var(--success)' : 'var(--warning)',
-            }}
-        >
-            {isMainnet ? (
-                <>
-                    <Globe className="w-4 h-4" />
-                    <span className="hidden sm:inline">Mainnet</span>
-                </>
-            ) : (
-                <>
-                    <TestTube className="w-4 h-4" />
-                    <span className="hidden sm:inline">Testnet</span>
-                </>
+        <div className="relative">
+            <button
+                onClick={toggle}
+                className="btn-ghost text-sm"
+                style={{
+                    color: isMainnet ? 'var(--success)' : 'var(--warning)',
+                }}
+                title={`Click to switch to ${isMainnet ? 'Testnet' : 'Mainnet'}`}
+            >
+                {isMainnet ? (
+                    <>
+                        <Globe className="w-4 h-4" />
+                        <span className="hidden sm:inline">Mainnet</span>
+                    </>
+                ) : (
+                    <>
+                        <TestTube className="w-4 h-4" />
+                        <span className="hidden sm:inline">Testnet</span>
+                    </>
+                )}
+            </button>
+
+            {/* Network Switch Alert */}
+            {showAlert && (
+                <div
+                    className="absolute top-full right-0 mt-2 p-3 rounded-lg shadow-lg z-50 w-64 animate-slide-up"
+                    style={{
+                        backgroundColor: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-color)'
+                    }}
+                >
+                    <div className="flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--warning)' }} />
+                        <div>
+                            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                                Switched to {isMainnet ? 'Mainnet' : 'Testnet'}
+                            </p>
+                            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                                Please also switch your wallet to {isMainnet ? 'Mainnet' : 'Testnet'} for transactions to work.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             )}
-        </button>
+        </div>
     );
 };
