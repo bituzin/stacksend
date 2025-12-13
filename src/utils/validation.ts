@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
 // Stacks address validation regex
-// Standard principal: SP or ST followed by 33-41 base58 characters
+// Standard principal: SP (mainnet), ST (testnet), or SM followed by base58 characters
 // Contract principal: Standard principal + .contract-name
-const STANDARD_PRINCIPAL_REGEX = /^S[PM][0-9A-HJ-NP-Za-km-z]{33,41}$/;
-const CONTRACT_PRINCIPAL_REGEX = /^S[PM][0-9A-HJ-NP-Za-km-z]{33,41}\.[a-zA-Z][a-zA-Z0-9-]*$/;
+const STANDARD_PRINCIPAL_REGEX = /^S[TPM][0-9A-HJ-NP-Za-km-z]{33,41}$/;
+const CONTRACT_PRINCIPAL_REGEX = /^S[TPM][0-9A-HJ-NP-Za-km-z]{33,41}\.[a-zA-Z][a-zA-Z0-9-]*$/;
 
 // Validate if string is a valid Stacks principal (standard or contract)
 export const isValidPrincipal = (address: string): boolean => {
