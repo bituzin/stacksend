@@ -68,18 +68,18 @@ function App() {
           borderColor: 'var(--border-color)'
         }}
       >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo & Title */}
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md">
-                <Layers className="w-5 h-5 text-white" />
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md flex-shrink-0">
+                <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <div>
-                <h1 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>StackSend</h1>
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-lg font-bold truncate" style={{ color: 'var(--text-primary)' }}>StackSend</h1>
                 {stxAddress && (
                   <p
-                    className="text-xs font-mono"
+                    className="text-xs font-mono hidden sm:block"
                     style={{ color: 'var(--text-muted)' }}
                   >
                     {stxAddress.slice(0, 6)}...{stxAddress.slice(-4)}
@@ -89,9 +89,11 @@ function App() {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2">
-              <NetworkToggle />
-              <PlanSelector onPlanChange={setMaxRecipients} />
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="hidden sm:flex items-center gap-2">
+                <NetworkToggle />
+                <PlanSelector onPlanChange={setMaxRecipients} />
+              </div>
 
               {/* Home - Go to Landing */}
               <button
@@ -126,11 +128,17 @@ function App() {
               </button>
             </div>
           </div>
+
+          {/* Mobile-only second row for Network and Plan */}
+          <div className="flex sm:hidden items-center gap-2 pb-2">
+            <NetworkToggle />
+            <PlanSelector onPlanChange={setMaxRecipients} />
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Plan Info Card */}
         <div
           className="card p-4 mb-6 flex items-center justify-between"
