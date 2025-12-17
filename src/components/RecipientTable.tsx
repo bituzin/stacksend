@@ -8,6 +8,8 @@ import { Cl, Pc } from '@stacks/transactions';
 import { useAuth } from '../hooks/useAuth';
 import { validateRecipient } from '../utils/validation';
 import { PasteModal } from './PasteModal';
+import { BulkAmountModal } from './BulkAmountModal';
+import type { AmountRange } from './BulkAmountModal';
 
 const schema = z.object({
     mode: z.enum(['stx', 'ft']),
@@ -42,6 +44,25 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
 
         const newRecips = addresses.slice(0, remaining).map(addr => ({ to: addr, amount: '' }));
         setValue('recipients', [...recipients, ...newRecips]);
+    };
+
+    const onBulkAmount = (ranges: AmountRange[]) => {
+        const updatedRecipients = [...recipients];
+
+        ranges.forEach(range => {
+            // Convert 1-based indices to 0-based array indices
+            const startIdx = range.startIndex - 1;
+            const endIdx = range.endIndex - 1;
+
+            for (let i = startIdx; i <= endIdx && i < updatedRecipients.length; i++) {
+                updatedRecipients[i] = {
+                    ...updatedRecipients[i],
+                    amount: range.amount
+                };
+            }
+        });
+
+        setValue('recipients', updatedRecipients);
     };
 
     const onSubmit = async (data: FormData) => {
@@ -147,9 +168,9 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="p-6">
             {/* Mode Selector */}
-            <div className="flex gap-2 mb-6">
+            <div className="flex flex-col sm:flex-row gap-2 mb-6">
                 <label
-                    className={`flex items-center gap-2 px-4 py-3 rounded-lg cursor-pointer transition-all ${mode === 'stx' ? 'ring-2 ring-orange-500' : ''}`}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg cursor-pointer transition-all flex-1 ${mode === 'stx' ? 'ring-2 ring-orange-500' : ''}`}
                     style={{
                         backgroundColor: mode === 'stx' ? 'var(--accent-orange-light)' : 'var(--bg-tertiary)',
                         color: mode === 'stx' ? 'var(--accent-orange)' : 'var(--text-secondary)'
@@ -165,7 +186,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
                     <span className="font-medium">STX</span>
                 </label>
                 <label
-                    className={`flex items-center gap-2 px-4 py-3 rounded-lg cursor-pointer transition-all ${mode === 'ft' ? 'ring-2 ring-orange-500' : ''}`}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg cursor-pointer transition-all flex-1 ${mode === 'ft' ? 'ring-2 ring-orange-500' : ''}`}
                     style={{
                         backgroundColor: mode === 'ft' ? 'var(--accent-orange-light)' : 'var(--bg-tertiary)',
                         color: mode === 'ft' ? 'var(--accent-orange)' : 'var(--text-secondary)'
@@ -192,96 +213,99 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3 mb-6">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-6">
                 <button
                     type="button"
                     onClick={() => append({ to: '', amount: '' })}
-                    className="btn-secondary"
+                    className="btn-secondary flex-1 sm:flex-initial justify-center"
                     disabled={fields.length >= maxRecipients}
                 >
                     <Plus className="w-4 h-4" />
                     <span>Add Recipient</span>
                 </button>
                 <PasteModal onPaste={onPaste} max={maxRecipients} />
+                <BulkAmountModal onApply={onBulkAmount} recipientCount={fields.length} />
             </div>
 
             {/* Recipients Table */}
-            <div
-                className="rounded-xl border overflow-hidden mb-6"
-                style={{ borderColor: 'var(--border-color)' }}
-            >
-                <table className="w-full">
-                    <thead>
-                        <tr style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-                            <th
-                                className="text-left text-sm font-medium px-4 py-3"
-                                style={{ color: 'var(--text-secondary)' }}
-                            >
-                                Recipient Address
-                            </th>
-                            <th
-                                className="text-left text-sm font-medium px-4 py-3 w-36"
-                                style={{ color: 'var(--text-secondary)' }}
-                            >
-                                Amount ({mode === 'stx' ? 'STX' : 'Tokens'})
-                            </th>
-                            <th className="w-12"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {fields.map((field, index) => (
-                            <tr
-                                key={field.id}
-                                className="border-t transition-colors"
-                                style={{
-                                    borderColor: 'var(--border-color)',
-                                }}
-                            >
-                                <td className="px-4 py-2">
-                                    <input
-                                        {...register(`recipients.${index}.to`)}
-                                        placeholder="SP... or ST..."
-                                        className="w-full py-2 bg-transparent outline-none font-mono text-sm"
-                                        style={{ color: 'var(--text-primary)' }}
-                                        onBlur={(e) => validateRecipient(e.target.value, watch(`recipients.${index}.amount`))}
-                                    />
-                                </td>
-                                <td className="px-4 py-2">
-                                    <input
-                                        type="number"
-                                        {...register(`recipients.${index}.amount`)}
-                                        placeholder="0.001"
-                                        step="any"
-                                        className="w-full py-2 bg-transparent outline-none text-sm"
-                                        style={{ color: 'var(--text-primary)' }}
-                                        min="0"
-                                    />
-                                </td>
-                                <td className="px-2 py-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => remove(index)}
-                                        className="p-2 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                                        style={{ color: 'var(--error)' }}
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        {fields.length === 0 && (
-                            <tr>
-                                <td
-                                    colSpan={3}
-                                    className="px-4 py-8 text-center text-sm"
-                                    style={{ color: 'var(--text-muted)' }}
+            <div className="table-wrapper mb-6">
+                <div
+                    className="rounded-xl border overflow-hidden"
+                    style={{ borderColor: 'var(--border-color)' }}
+                >
+                    <table className="w-full">
+                        <thead>
+                            <tr style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                                <th
+                                    className="text-left text-xs sm:text-sm font-medium px-2 sm:px-4 py-3"
+                                    style={{ color: 'var(--text-secondary)' }}
                                 >
-                                    No recipients added yet. Click "Add Recipient" to start.
-                                </td>
+                                    Recipient Address
+                                </th>
+                                <th
+                                    className="text-left text-xs sm:text-sm font-medium px-2 sm:px-4 py-3 w-24 sm:w-36"
+                                    style={{ color: 'var(--text-secondary)' }}
+                                >
+                                    Amount ({mode === 'stx' ? 'STX' : 'Tokens'})
+                                </th>
+                                <th className="w-12"></th>
                             </tr>
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {fields.map((field, index) => (
+                                <tr
+                                    key={field.id}
+                                    className="border-t transition-colors"
+                                    style={{
+                                        borderColor: 'var(--border-color)',
+                                    }}
+                                >
+                                    <td className="px-2 sm:px-4 py-2">
+                                        <input
+                                            {...register(`recipients.${index}.to`)}
+                                            placeholder="SP... or ST..."
+                                            className="w-full py-2 bg-transparent outline-none font-mono text-xs sm:text-sm"
+                                            style={{ color: 'var(--text-primary)' }}
+                                            onBlur={(e) => validateRecipient(e.target.value, watch(`recipients.${index}.amount`))}
+                                        />
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-2">
+                                        <input
+                                            type="number"
+                                            {...register(`recipients.${index}.amount`)}
+                                            placeholder="0.001"
+                                            step="any"
+                                            className="w-full py-2 bg-transparent outline-none text-xs sm:text-sm"
+                                            style={{ color: 'var(--text-primary)' }}
+                                            min="0"
+                                        />
+                                    </td>
+                                    <td className="px-2 py-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => remove(index)}
+                                            className="p-2 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                                            style={{ color: 'var(--error)' }}
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            {fields.length === 0 && (
+                                <tr>
+                                    <td
+                                        colSpan={3}
+                                        className="px-4 py-8 text-center text-sm"
+                                        style={{ color: 'var(--text-muted)' }}
+                                    >
+                                        No recipients added yet. Click "Add Recipient" to start.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Summary */}
