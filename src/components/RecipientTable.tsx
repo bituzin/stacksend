@@ -27,6 +27,7 @@ interface RecipientTableProps {
 export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress, maxRecipients }) => {
     const { isAuthenticated, stxAddress, network } = useAuth();
     const [status, setStatus] = useState('');
+    const [tokenDecimals, setTokenDecimals] = useState(8); // Default to 8 decimals (like sBTC)
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { control, handleSubmit, watch, setValue, register } = useForm<FormData>({
@@ -112,12 +113,16 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
                     return;
                 }
 
-                const recipientTuples = data.recipients.map(r =>
-                    Cl.tuple({
+                // For FT, convert decimal amount to base units (e.g., sBTC uses 8 decimals)
+                // User enters 0.00001 sBTC, we convert to 1000 satoshis
+                const recipientTuples = data.recipients.map(r => {
+                    const decimalAmount = Number(r.amount);
+                    const baseUnitAmount = Math.floor(decimalAmount * Math.pow(10, tokenDecimals));
+                    return Cl.tuple({
                         to: Cl.principal(r.to),
-                        amount: Cl.uint(Number(r.amount))
-                    })
-                );
+                        amount: Cl.uint(baseUnitAmount)
+                    });
+                });
 
                 functionArgs = [
                     Cl.principal(data.tokenContract),
@@ -205,11 +210,29 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
 
             {/* Token Contract Input */}
             {mode === 'ft' && (
-                <input
-                    {...register('tokenContract')}
-                    placeholder="Token Contract (e.g., SP2...::token-name)"
-                    className="input-field mb-6"
-                />
+                <div className="space-y-3 mb-6">
+                    <input
+                        {...register('tokenContract')}
+                        placeholder="Token Contract (e.g., SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin)"
+                        className="input-field"
+                    />
+                    <div className="flex items-center gap-3">
+                        <label className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                            Token Decimals:
+                        </label>
+                        <input
+                            type="number"
+                            value={tokenDecimals}
+                            onChange={(e) => setTokenDecimals(Number(e.target.value))}
+                            min="0"
+                            max="18"
+                            className="input-field w-24"
+                        />
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                            (sBTC uses 8 decimals)
+                        </span>
+                    </div>
+                </div>
             )}
 
             {/* Action Buttons */}
@@ -273,7 +296,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({ contractAddress,
                                         <input
                                             type="number"
                                             {...register(`recipients.${index}.amount`)}
-                                            placeholder="0.001"
+                                            placeholder={mode === 'stx' ? '0.001' : '0.00001'}
                                             step="any"
                                             className="w-full py-2 bg-transparent outline-none text-xs sm:text-sm"
                                             style={{ color: 'var(--text-primary)' }}
