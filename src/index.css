@@ -265,3 +265,73 @@ body {
 .animate-slide-up {
   animation: slideUp 0.4s ease-out;
 }
+
+/* ============================================
+   Mobile Responsiveness
+   ============================================ */
+
+@media (max-width: 640px) {
+
+  /* Reduce button padding for mobile */
+  .btn-primary {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .btn-secondary {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .btn-ghost {
+    padding: 0.5rem;
+  }
+
+  /* Ensure minimum touch target size */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Compact card padding */
+  .card {
+    border-radius: 10px;
+  }
+
+  /* Smaller input fields */
+  .input-field {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  /* Make tables scrollable horizontally */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Adjust modal sizing */
+  .modal-panel {
+    max-width: calc(100vw - 2rem);
+    margin: 1rem;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+
+  /* Hide button text, show only icons */
+  .btn-icon-only-mobile span {
+    display: none;
+  }
+
+  /* Stack buttons vertically if needed */
+  .btn-group-mobile {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-group-mobile button {
+    width: 100%;
+  }
+}
