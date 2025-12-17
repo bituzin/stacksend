@@ -26,7 +26,7 @@ export const PasteModal: React.FC<PasteModalProps> = ({ onPaste, max }) => {
             <button
                 type="button"
                 onClick={() => setIsOpen(true)}
-                className="btn-secondary"
+                className="btn-secondary flex-1 sm:flex-initial justify-center"
             >
                 <Clipboard className="w-4 h-4" />
                 <span>Paste Addresses</span>
@@ -59,7 +59,7 @@ export const PasteModal: React.FC<PasteModalProps> = ({ onPaste, max }) => {
                             leaveTo="opacity-0 scale-95"
                         >
                             <Dialog.Panel
-                                className="w-full max-w-lg rounded-2xl p-6 shadow-2xl"
+                                className="w-full max-w-lg rounded-2xl p-4 sm:p-6 shadow-2xl"
                                 style={{ backgroundColor: 'var(--bg-secondary)' }}
                             >
                                 <div className="flex items-center justify-between mb-4">
@@ -104,18 +104,18 @@ export const PasteModal: React.FC<PasteModalProps> = ({ onPaste, max }) => {
                                     </span>
                                 </div>
 
-                                <div className="flex gap-3 justify-end">
+                                <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end">
                                     <button
                                         type="button"
                                         onClick={() => setIsOpen(false)}
-                                        className="btn-ghost"
+                                        className="btn-ghost justify-center"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="button"
                                         onClick={handlePaste}
-                                        className="btn-primary"
+                                        className="btn-primary justify-center"
                                         disabled={addressCount === 0}
                                     >
                                         Add {Math.min(addressCount, max)} Address{addressCount !== 1 ? 'es' : ''}
