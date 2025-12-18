@@ -124,7 +124,7 @@ export function TelegramLinkWidget({ walletAddress }: TelegramLinkWidgetProps) {
                     </div>
 
                     <a
-                        href={`https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'your_bot'}`}
+                        href={`https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'stacksendbot'}?start=${walletAddress}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-blue-500/50"
