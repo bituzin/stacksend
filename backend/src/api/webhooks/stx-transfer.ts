@@ -57,26 +57,21 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
                     continue;
                 }
 
-                // Debug: Log full transaction structure to find events
-                const txStr = JSON.stringify(tx, null, 2);
-                console.log('TX FULL:', txStr.slice(0, 3000));
+                // Parse recipients from operations (CREDIT operations)
+                const creditOps = operations.filter((op: any) => op.type === 'CREDIT');
 
-                // Parse recipients from tx.receipt.events (STXTransferEvent)
-                const events = tx.receipt?.events || [];
-                const stxTransferEvents = events.filter((e: any) => e.type === 'STXTransferEvent');
-
-                console.log(`📊 Found ${stxTransferEvents.length} STX transfer events`);
+                console.log(`📊 Found ${creditOps.length} CREDIT operations`);
 
                 const recipients: Array<{ address: string; amount: number }> = [];
                 let totalAmount = 0;
 
-                // Extract recipients from events (skip the fee payment to sender)
-                for (const event of stxTransferEvents) {
-                    const recipient = event.data?.recipient;
-                    const amount = parseInt(event.data?.amount || '0');
+                // Extract recipients from CREDIT operations
+                for (const op of creditOps) {
+                    const recipient = op.account?.address;
+                    const amount = parseInt(op.amount?.value || '0');
 
-                    // Skip if it's the sender receiving (change/refund)
-                    if (recipient && amount > 0 && recipient !== senderAddress) {
+                    // Filter out non-STX transfers and sender receiving change
+                    if (recipient && amount > 0 && op.amount?.currency?.symbol === 'STX' && recipient !== senderAddress) {
                         recipients.push({ address: recipient, amount });
                         totalAmount += amount;
                     }
