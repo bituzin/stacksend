@@ -57,6 +57,9 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
                     continue;
                 }
 
+                // Debug: Log receipt structure
+                console.log('RECEIPT:', JSON.stringify(tx.receipt, null, 2).slice(0, 1500));
+
                 // Parse recipients from tx.receipt.events (STXTransferEvent)
                 const events = tx.receipt?.events || [];
                 const stxTransferEvents = events.filter((e: any) => e.type === 'STXTransferEvent');
