@@ -35,7 +35,10 @@ export function ActivityFeed({ walletAddress }: ActivityFeedProps) {
 
     const formatAmount = (event: ActivityEvent) => {
         if (event.amount_decimals) {
-            return event.amount_decimals.toFixed(6);
+            const amount = typeof event.amount_decimals === 'number'
+                ? event.amount_decimals
+                : parseFloat(event.amount_decimals);
+            return amount.toFixed(6);
         }
         return event.amount?.toString() || '0';
     };
