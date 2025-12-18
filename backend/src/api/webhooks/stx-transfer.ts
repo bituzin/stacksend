@@ -165,6 +165,23 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
                     });
                 }
 
+                // Send notification to sender
+                const senderUser = await db.getUserByAddress(senderAddress);
+                if (senderUser?.telegram_chat_id && senderUser.notification_enabled) {
+                    const senderMessageId = await telegramService.sendSenderNotification({
+                        chatId: senderUser.telegram_chat_id,
+                        senderAddress,
+                        recipientCount: recipients.length,
+                        totalAmount: totalAmount / 1_000_000,
+                        txId,
+                        network,
+                    });
+
+                    console.log(`📱 Sender notification ${senderMessageId ? 'sent' : 'failed'} to ${senderUser.telegram_chat_id}`);
+                } else {
+                    console.log(`ℹ️  No Telegram linked for sender ${senderAddress}`);
+                }
+
                 // Add sender activity
                 await db.insertActivityFeed({
                     user_address: senderAddress,

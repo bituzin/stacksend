@@ -137,6 +137,45 @@ class TelegramService {
     }
 
     /**
+     * Send notification to sender after multisend
+     */
+    async sendSenderNotification(params: {
+        chatId: number;
+        senderAddress: string;
+        recipientCount: number;
+        totalAmount: number;
+        txId: string;
+        network: string;
+    }): Promise<number | null> {
+        const { chatId, senderAddress, recipientCount, totalAmount, txId, network } = params;
+
+        const explorerUrl = network === 'mainnet'
+            ? `https://explorer.hiro.so/txid/${txId}`
+            : `https://explorer.hiro.so/txid/${txId}?chain=testnet`;
+
+        const message = `
+📤 *You sent ${totalAmount} STX to ${recipientCount} recipients!*
+
+💰 *Total Amount:* ${totalAmount} STX
+👥 *Recipients:* ${recipientCount}
+📬 *From:* \`${senderAddress.slice(0, 8)}...${senderAddress.slice(-6)}\`
+🔗 [View Transaction](${explorerUrl})
+    `.trim();
+
+        try {
+            const result = await this.bot.sendMessage(chatId, message, {
+                parse_mode: 'Markdown',
+                disable_web_page_preview: false,
+            });
+            console.log(`✅ Sender notification sent to ${chatId} for tx ${txId.slice(0, 10)}...`);
+            return result.message_id;
+        } catch (error: any) {
+            console.error(`❌ Failed to send sender notification to ${chatId}:`, error.message);
+            return null;
+        }
+    }
+
+    /**
      * Send welcome message when user links their wallet
      */
     async sendWelcomeMessage(chatId: number, walletAddress: string): Promise<void> {
