@@ -16,10 +16,39 @@ class TelegramService {
     }
 
     private setupCommands() {
-        // Handle /start command
-        this.bot.onText(/\/start/, async (msg) => {
+        // Handle /start command (with optional wallet address parameter)
+        this.bot.onText(/\/start(.*)/, async (msg, match) => {
             const chatId = msg.chat.id;
-            await this.handleStartCommand(chatId);
+            const username = msg.from?.username;
+
+            // Extract wallet address from deep link parameter
+            const param = match?.[1]?.trim();
+
+            if (param && param.length > 0) {
+                // User clicked deep link with wallet address
+                const walletAddress = param;
+
+                // Validate Stacks address format (starts with SP or ST)
+                if (walletAddress.startsWith('SP') || walletAddress.startsWith('ST')) {
+                    try {
+                        // Link wallet to Telegram
+                        await db.linkTelegram(walletAddress, chatId, username);
+
+                        // Send success message
+                        await this.sendWelcomeMessage(chatId, walletAddress);
+
+                        console.log(`✅ Linked wallet ${walletAddress} to Telegram chat ${chatId}`);
+                    } catch (error: any) {
+                        console.error('Failed to link Telegram:', error);
+                        await this.bot.sendMessage(chatId, '❌ Failed to link your wallet. Please try again.');
+                    }
+                } else {
+                    await this.bot.sendMessage(chatId, '❌ Invalid wallet address. Please use the link from the StackSend app.');
+                }
+            } else {
+                // Regular /start without parameter
+                await this.handleStartCommand(chatId);
+            }
         });
 
         // Handle /status, /enable, /disable 
