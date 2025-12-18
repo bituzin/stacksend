@@ -4,19 +4,16 @@ import { telegramService } from '../../services/telegram.js';
 
 export async function handleSTXTransferWebhook(req: Request, res: Response): Promise<void> {
     try {
-        console.log('🔍 ===== STX TRANSFER WEBHOOK =====');
-        console.log('Timestamp:', new Date().toISOString());
-        console.log('Headers:', JSON.stringify(req.headers, null, 2));
-        console.log('Body:', JSON.stringify(req.body, null, 2));
-
         const payload = req.body;
 
         // Send immediate 200 OK to acknowledge receipt
         res.status(200).json({ received: true });
 
+        console.log('📥 STX Webhook received');
+
         // Validate payload structure (but don't fail the request)
         if (!payload?.apply || !Array.isArray(payload.apply)) {
-            console.log('⚠️  Unexpected payload structure - may be test ping');
+            console.warn('⚠️  Invalid payload structure');
             return;
         }
 
