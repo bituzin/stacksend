@@ -1,0 +1,28 @@
+---
+id: 0
+name: Mainnet deployment
+network: mainnet
+stacks-node: "https://api.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoin.blockstack.com:8332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: sip-010-trait-ft-standard
+            expected-sender: SP31DP8F8CF2GXSZBHHHK5J6Y061744E1TNFGYWYV
+            cost: 4370
+            path: contracts/traits/sip-010-trait-ft-standard.clar
+            anchor-block-only: true
+            clarity-version: 2
+      epoch: "3.0"
+    - id: 1
+      transactions:
+        - contract-publish:
+            contract-name: multisend
+            expected-sender: SP31DP8F8CF2GXSZBHHHK5J6Y061744E1TNFGYWYV
+            cost: 62000
+            path: contracts/multisend.clar
+            anchor-block-only: true
+            clarity-version: 4
+      epoch: "3.3"
