@@ -6,9 +6,29 @@ class TelegramService {
     private bot: TelegramBot;
 
     constructor() {
-        // Initialize bot without polling (we'll handle commands via direct API)
-        this.bot = new TelegramBot(config.telegram.botToken, { polling: false });
-        console.log('✅ Telegram bot initialized');
+        // Enable polling to listen for commands
+        this.bot = new TelegramBot(config.telegram.botToken, { polling: true });
+
+        // Set up command handlers
+        this.setupCommands();
+
+        console.log('✅ Telegram bot initialized with polling');
+    }
+
+    private setupCommands() {
+        // Handle /start command
+        this.bot.onText(/\/start/, async (msg) => {
+            const chatId = msg.chat.id;
+            await this.handleStartCommand(chatId);
+        });
+
+        // Handle /status, /enable, /disable 
+        this.bot.onText(/\/status|\/enable|\/disable/, async (msg) => {
+            const chatId = msg.chat.id;
+            await this.bot.sendMessage(chatId, 'Link your wallet in the StackSend app first!');
+        });
+
+        console.log('✅ Bot commands registered');
     }
 
     /**
