@@ -3,6 +3,8 @@ import { RecipientTable } from './components/RecipientTable';
 import { WalletConnect } from './components/WalletConnect';
 import { NetworkToggle } from './components/NetworkToggle';
 import { PlanSelector } from './components/PlanSelector';
+import { TelegramLinkWidget } from './components/TelegramLinkWidget';
+import { ActivityFeed } from './components/ActivityFeed';
 import { useAuth } from './hooks/useAuth';
 import { getContractAddress } from './utils/constants';
 import { Sun, Moon, LogOut, Layers, Home } from 'lucide-react';
@@ -165,6 +167,16 @@ function App() {
         {/* Recipient Table */}
         <div className="card" style={{ backgroundColor: 'var(--bg-secondary)' }}>
           <RecipientTable contractAddress={contractAddress} maxRecipients={maxRecipients} />
+        </div>
+
+        {/* Telegram Notifications */}
+        <div className="mt-8">
+          <TelegramLinkWidget walletAddress={stxAddress} />
+        </div>
+
+        {/* Activity Feed */}
+        <div className="mt-8">
+          <ActivityFeed walletAddress={stxAddress} />
         </div>
       </main>
 
