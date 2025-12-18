@@ -35,6 +35,7 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
                 const operations = tx.operations || [];
 
                 console.log(`🔍 TX ${txId?.slice(0, 12)}... success=${success}`);
+                console.log('TX STRUCTURE:', JSON.stringify(tx, null, 2).slice(0, 2000)); // First 2000 chars
 
                 if (!success) {
                     console.log('⚠️  Skipping failed transaction');
@@ -48,6 +49,7 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
 
                 if (!contractCallOp) {
                     console.log('⚠️  No send-many-stx contract call found');
+                    console.log('Available operations:', operations.map((op: any) => ({ type: op.type, metadata: op.metadata })));
                     continue;
                 }
 
