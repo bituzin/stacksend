@@ -9,7 +9,13 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
         // Send immediate 200 OK to acknowledge receipt
         res.status(200).json({ received: true });
 
+        const network = payload.chainhook?.network || 'unknown'; // 'mainnet' or 'testnet'
+
+        console.log('🔍 ===== STX WEBHOOK =====');
         console.log('📥 STX Webhook received');
+        console.log(`🌐 Network from chainhook: ${network}`);
+        console.log(`🔗 Chainhook UUID: ${payload.chainhook?.uuid}`);
+        console.log(`📛 Chainhook predicate: ${JSON.stringify(payload.chainhook?.predicate).slice(0, 100)}...`);
 
         // Validate payload structure (but don't fail the request)
         if (!payload?.apply || !Array.isArray(payload.apply)) {
@@ -17,8 +23,6 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
             return;
         }
 
-
-        const network = payload.chainhook?.network || 'unknown'; // 'mainnet' or 'testnet'
 
         // Process each block from apply array
         for (const block of payload.apply) {
