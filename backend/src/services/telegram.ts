@@ -51,10 +51,46 @@ class TelegramService {
             }
         });
 
-        // Handle /status, /enable, /disable 
-        this.bot.onText(/\/status|\/enable|\/disable/, async (msg) => {
+
+        // Handle /status command
+        this.bot.onText(/\/status/, async (msg) => {
             const chatId = msg.chat.id;
-            await this.bot.sendMessage(chatId, 'Link your wallet in the StackSend app first!');
+            const user = await db.getUserByTelegramChatId(chatId);
+
+            if (!user) {
+                await this.bot.sendMessage(chatId, '❌ No wallet linked. Use the "Link Telegram" button in the StackSend app.');
+                return;
+            }
+
+            await this.sendStatusMessage(chatId, user.wallet_address, user.notification_enabled);
+        });
+
+        // Handle /enable command
+        this.bot.onText(/\/enable/, async (msg) => {
+            const chatId = msg.chat.id;
+            const user = await db.getUserByTelegramChatId(chatId);
+
+            if (!user) {
+                await this.bot.sendMessage(chatId, '❌ No wallet linked. Use the "Link Telegram" button in the StackSend app.');
+                return;
+            }
+
+            await db.setNotificationEnabled(user.wallet_address, true);
+            await this.bot.sendMessage(chatId, '✅ Notifications enabled!');
+        });
+
+        // Handle /disable command
+        this.bot.onText(/\/disable/, async (msg) => {
+            const chatId = msg.chat.id;
+            const user = await db.getUserByTelegramChatId(chatId);
+
+            if (!user) {
+                await this.bot.sendMessage(chatId, '❌ No wallet linked. Use the "Link Telegram" button in the StackSend app.');
+                return;
+            }
+
+            await db.setNotificationEnabled(user.wallet_address, false);
+            await this.bot.sendMessage(chatId, '🔕 Notifications disabled.');
         });
 
         console.log('✅ Bot commands registered');

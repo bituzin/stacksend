@@ -43,6 +43,13 @@ class DatabaseClient {
         return result.rows[0] || null;
     }
 
+    async getUserByTelegramChatId(chatId: number): Promise<any> {
+        const query = 'SELECT * FROM users WHERE telegram_chat_id = $1';
+        const result = await this.pool.query(query, [chatId]);
+        return result.rows[0] || null;
+    }
+
+
     async linkTelegram(walletAddress: string, chatId: number, username?: string): Promise<void> {
         await this.ensureUser(walletAddress);
 
