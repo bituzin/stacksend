@@ -178,12 +178,13 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
             }
         }
 
+
         console.log('🔍 ===== END WEBHOOK =====');
-        res.status(200).json({ success: true });
+        // Response already sent at the beginning
 
     } catch (error: any) {
         console.error('❌ Webhook error:', error);
         console.error('Stack:', error.stack);
-        res.status(500).json({ error: 'Internal server error' });
+        // Don't send response - already sent at the beginning
     }
 }
