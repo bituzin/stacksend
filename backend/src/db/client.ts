@@ -21,8 +21,9 @@ class DatabaseClient {
             const result = await this.pool.query('SELECT NOW()');
             console.log('✅ Database connected:', result.rows[0].now);
         } catch (error) {
-            console.error('❌ Database connection failed:', error);
-            throw error;
+            console.warn('⚠️  Database connection failed (server will continue):', error instanceof Error ? error.message : error);
+            console.warn('⚠️  Database features will not work until connection is established');
+            // Don't throw - allow server to start without DB
         }
     }
 
