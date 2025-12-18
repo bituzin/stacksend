@@ -6,21 +6,25 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
     try {
         console.log('🔍 ===== STX TRANSFER WEBHOOK =====');
         console.log('Timestamp:', new Date().toISOString());
+        console.log('Headers:', JSON.stringify(req.headers, null, 2));
         console.log('Body:', JSON.stringify(req.body, null, 2));
 
         const payload = req.body;
 
-        // Validate payload structure
-        if (!payload.event?.apply || !Array.isArray(payload.event.apply)) {
-            console.log('⚠️  Invalid payload structure');
-            res.status(400).json({ error: 'Invalid payload' });
+        // Send immediate 200 OK to acknowledge receipt
+        res.status(200).json({ received: true });
+
+        // Validate payload structure (but don't fail the request)
+        if (!payload?.apply || !Array.isArray(payload.apply)) {
+            console.log('⚠️  Unexpected payload structure - may be test ping');
             return;
         }
 
-        const network = payload.event.network; // 'mainnet' or 'testnet'
 
-        // Process each block
-        for (const block of payload.event.apply) {
+        const network = payload.chainhook?.network || 'unknown'; // 'mainnet' or 'testnet'
+
+        // Process each block from apply array
+        for (const block of payload.apply) {
             const blockHeight = block.block_identifier?.index;
             const timestamp = block.timestamp;
             const transactions = block.transactions || [];
