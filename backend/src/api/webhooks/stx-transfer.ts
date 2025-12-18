@@ -35,49 +35,55 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
                 const operations = tx.operations || [];
 
                 console.log(`🔍 TX ${txId?.slice(0, 12)}... success=${success}`);
-                console.log('TX STRUCTURE:', JSON.stringify(tx, null, 2).slice(0, 2000)); // First 2000 chars
 
                 if (!success) {
                     console.log('⚠️  Skipping failed transaction');
                     continue;
                 }
 
-                // CRITICAL: Parse contract call to extract function arguments
-                const contractCallOp = operations.find(
-                    (op: any) => op.type === 'CONTRACT_CALL' && op.metadata?.function_name === 'send-many-stx'
-                );
-
-                if (!contractCallOp) {
-                    console.log('⚠️  No send-many-stx contract call found');
-                    console.log('Available operations:', operations.map((op: any) => ({ type: op.type, metadata: op.metadata })));
+                // Check if this is a send-many-stx call by examining metadata.description
+                const description = tx.metadata?.description || '';
+                if (!description.includes('send-many-stx')) {
+                    console.log('⚠️  Not a send-many-stx transaction');
                     continue;
                 }
 
-                // Extract sender
-                const senderAddress = contractCallOp.account?.address || tx.metadata?.sender;
+                console.log('✅ Found send-many-stx call!');
 
-                // Extract recipients list from decoded arguments
-                const functionArgs = contractCallOp.metadata?.function_args_decoded || contractCallOp.metadata?.function_args;
-
-                if (!functionArgs || !Array.isArray(functionArgs) || functionArgs.length === 0) {
-                    console.log('⚠️  Missing or invalid function arguments');
+                // Extract sender from metadata
+                const senderAddress = tx.metadata?.sender;
+                if (!senderAddress) {
+                    console.log('❌ No sender address found');
                     continue;
                 }
 
-                // First argument is the recipients list
-                const recipientsList = functionArgs[0];
+                // Parse recipients from tx.receipt.events (STXTransferEvent)
+                const events = tx.receipt?.events || [];
+                const stxTransferEvents = events.filter((e: any) => e.type === 'STXTransferEvent');
 
-                if (!Array.isArray(recipientsList)) {
-                    console.log('⚠️  Recipients is not an array');
+                console.log(`📊 Found ${stxTransferEvents.length} STX transfer events`);
+
+                const recipients: Array<{ address: string; amount: number }> = [];
+                let totalAmount = 0;
+
+                // Extract recipients from events (skip the fee payment to sender)
+                for (const event of stxTransferEvents) {
+                    const recipient = event.data?.recipient;
+                    const amount = parseInt(event.data?.amount || '0');
+
+                    // Skip if it's the sender receiving (change/refund)
+                    if (recipient && amount > 0 && recipient !== senderAddress) {
+                        recipients.push({ address: recipient, amount });
+                        totalAmount += amount;
+                    }
+                }
+
+                if (recipients.length === 0) {
+                    console.log('⚠️  No valid recipients found');
                     continue;
                 }
 
-                console.log(`📋 Found ${recipientsList.length} recipient(s)`);
-
-                // Calculate total amount
-                const totalAmount = recipientsList.reduce((sum: number, r: any) => {
-                    return sum + (typeof r.ustx === 'number' ? r.ustx : parseInt(r.ustx || '0'));
-                }, 0);
+                console.log(`📋 Parsed ${recipients.length} recipient(s), total: ${totalAmount} µSTX`);
 
                 // Save transfer to database
                 const transferId = await db.insertTransfer({
@@ -88,17 +94,15 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
                     transfer_type: 'STX',
                     token_contract: null,
                     total_amount: totalAmount,
-                    recipient_count: recipientsList.length,
+                    recipient_count: recipients.length,
                     network,
                 });
 
                 console.log(`✅ Transfer saved with ID: ${transferId}`);
 
                 // Process each recipient
-                for (let i = 0; i < recipientsList.length; i++) {
-                    const recipient = recipientsList[i];
-                    const recipientAddress = recipient.to;
-                    const amount = typeof recipient.ustx === 'number' ? recipient.ustx : parseInt(recipient.ustx || '0');
+                for (let i = 0; i < recipients.length; i++) {
+                    const { address: recipientAddress, amount } = recipients[i];
 
                     // Convert microSTX to STX
                     const amountInSTX = amount / 1_000_000;
@@ -169,7 +173,7 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
                     transfer_id: transferId,
                     recipient_id: null,
                     metadata: {
-                        recipient_count: recipientsList.length,
+                        recipient_count: recipients.length,
                         total_amount: totalAmount / 1_000_000,
                         token: 'STX',
                     },
