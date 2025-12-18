@@ -9,15 +9,21 @@ export async function handleFTTransferWebhook(req: Request, res: Response): Prom
         // Send immediate 200 OK to acknowledge receipt
         res.status(200).json({ received: true });
 
+        // Extract network from predicate contract address since payload.chainhook.network is not reliable
+        const contractIdentifier = payload.chainhook?.predicate?.contract_identifier || '';
+        const network = contractIdentifier.startsWith('SP') ? 'mainnet' :
+            contractIdentifier.startsWith('ST') ? 'testnet' : 'unknown';
+
+        console.log('🔍 ===== FT WEBHOOK =====');
         console.log('📥 FT Webhook received');
+        console.log(`🌐 Network detected from contract: ${network}`);
+
 
         // Validate payload structure (but don't fail the request)
         if (!payload?.apply || !Array.isArray(payload.apply)) {
             console.warn('⚠️  Invalid payload structure');
             return;
         }
-
-        const network = payload.chainhook?.network || 'unknown';
 
         // Process each block
         for (const block of payload.apply) {
