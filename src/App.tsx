@@ -26,16 +26,6 @@ function App() {
     applyTheme(saved);
   }, []);
 
-  // Auto-sync landing state: if user was on landing and becomes authenticated,
-  // keep them on landing (they can manually click Go to App)
-  // But if showLanding is false and they're not authenticated, show landing
-  useEffect(() => {
-    if (!isAuthenticated && !showLanding) {
-      console.log('🔄 User lost authentication, showing landing');
-      setShowLanding(true);
-    }
-  }, [isAuthenticated, showLanding]);
-
   const applyTheme = (newTheme: string) => {
     document.documentElement.setAttribute('data-theme', newTheme);
     if (newTheme === 'dark') {
@@ -63,10 +53,17 @@ function App() {
 
   console.log('🔍 App render:', { showLanding, isAuthenticated, stxAddress: stxAddress?.slice(0, 8) });
 
-  // Show landing page if explicitly requested OR if not authenticated
-  if (showLanding || !isAuthenticated) {
-    console.log('📄 Rendering WalletConnect because:', { showLanding, isAuthenticated });
-    return <WalletConnect key={isAuthenticated ? 'authenticated' : 'unauthenticated'} onEnterApp={handleEnterApp} />;
+  // Only show landing if explicitly requested (not based on auth state)
+  // Once user enters app (showLanding=false), stay in app even if auth state flickers
+  if (showLanding) {
+    console.log('📄 Rendering WalletConnect');
+    return <WalletConnect onEnterApp={handleEnterApp} />;
+  }
+
+  // If not authenticated and not showing landing, something went wrong - show landing
+  if (!isAuthenticated) {
+    console.log('⚠️ Not authenticated but trying to show app, redirecting to landing');
+    return <WalletConnect onEnterApp={handleEnterApp} />;
   }
 
   console.log('🎯 Rendering main app');
