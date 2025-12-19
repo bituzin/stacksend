@@ -43,20 +43,6 @@ function App() {
     applyTheme(newTheme);
   };
 
-  // Automatically hide landing if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      setShowLanding(false);
-    }
-  }, [isAuthenticated]);
-
-  // If authentication state changes to false, show landing
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setShowLanding(true);
-    }
-  }, [isAuthenticated]);
-
   const handleEnterApp = useCallback(() => {
     setShowLanding(false);
   }, []);
@@ -72,12 +58,12 @@ function App() {
     }
   }, [showLanding, isAuthenticated]);
 
-  // Render landing if showLanding is true
-  if (showLanding || !isAuthenticated) {
+  // Show landing page if explicitly requested (manual user control)
+  if (showLanding) {
     return <WalletConnect onEnterApp={handleEnterApp} />;
   }
 
-  // Render main app only when authenticated and not showing landing
+  // Render main app - user clicked "Go to App"
   return (
     <div key="main-app" className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       {/* Header */}
