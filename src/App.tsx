@@ -53,20 +53,23 @@ function App() {
 
   console.log('🔍 App render:', { showLanding, isAuthenticated, stxAddress: stxAddress?.slice(0, 8) });
 
-  // Only show landing if explicitly requested (not based on auth state)
-  // Once user enters app (showLanding=false), stay in app even if auth state flickers
+  // Show landing page if explicitly requested
   if (showLanding) {
     console.log('📄 Rendering WalletConnect');
     return <WalletConnect onEnterApp={handleEnterApp} />;
   }
 
-  // If not authenticated and not showing landing, something went wrong - show landing
-  if (!isAuthenticated) {
-    console.log('⚠️ Not authenticated but trying to show app, redirecting to landing');
-    return <WalletConnect onEnterApp={handleEnterApp} />;
-  }
-
+  // User clicked "Go to App" - show the app even if auth state hasn't updated yet
+  // The disconnect button will handle logout
   console.log('🎯 Rendering main app');
+
+  // If user manually disconnects while in the app, show landing
+  useEffect(() => {
+    if (!showLanding && !isAuthenticated && stxAddress === null) {
+      console.log('🔌 User disconnected, showing landing');
+      setShowLanding(true);
+    }
+  }, [isAuthenticated, showLanding, stxAddress]);
 
   // Scroll to top when entering app to ensure proper render
   useEffect(() => {
