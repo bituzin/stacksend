@@ -35,24 +35,20 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onEnterApp }) => {
         setIsConnecting(true);
         try {
             await authenticate();
+            // Auto-enter app after successful authentication
+            if (onEnterApp) {
+                setTimeout(() => {
+                    onEnterApp();
+                }, 300); // Small delay for smooth transition
+            }
         } catch (err: any) {
             console.error('Connection error:', err);
             setError(err?.message || 'Failed to connect wallet. Please try again.');
+        } finally {
             setIsConnecting(false);
         }
-        // Don't set isConnecting to false here - let the useEffect handle it
     };
 
-    // Auto-enter app after successful authentication
-    useEffect(() => {
-        if (isAuthenticated && isConnecting && onEnterApp) {
-            setIsConnecting(false);
-            // Small delay to ensure smooth transition
-            setTimeout(() => {
-                onEnterApp();
-            }, 100);
-        }
-    }, [isAuthenticated, isConnecting, onEnterApp]);
 
     const handleEnterApp = () => {
         if (onEnterApp) {
