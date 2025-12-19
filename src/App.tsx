@@ -63,15 +63,6 @@ function App() {
   // The disconnect button will handle logout
   console.log('🎯 Rendering main app');
 
-  // If user manually disconnects while in the app, show landing
-  useEffect(() => {
-    if (!showLanding && !isAuthenticated && stxAddress === null) {
-      console.log('🔌 User disconnected, showing landing');
-      // Defer state update to avoid React error #310
-      setTimeout(() => setShowLanding(true), 0);
-    }
-  }, [isAuthenticated, showLanding, stxAddress]);
-
   // Scroll to top when entering app to ensure proper render
   useEffect(() => {
     if (!showLanding && isAuthenticated) {
@@ -142,7 +133,10 @@ function App() {
 
               {/* Disconnect */}
               <button
-                onClick={disconnect}
+                onClick={() => {
+                  disconnect();
+                  setShowLanding(true);
+                }}
                 className="btn-ghost text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                 aria-label="Disconnect wallet"
               >
