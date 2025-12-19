@@ -89,6 +89,13 @@ export async function handleFTTransferWebhook(req: Request, res: Response): Prom
                     return sum + (typeof r.amount === 'number' ? r.amount : parseInt(r.amount || '0'));
                 }, 0);
 
+                // Check if this transaction was already processed
+                const alreadyProcessed = await db.transferExists(txId);
+                if (alreadyProcessed) {
+                    console.log(`⏭️  Transaction ${txId.slice(0, 12)}... already processed, skipping`);
+                    continue;
+                }
+
                 // Save transfer
                 const transferId = await db.insertTransfer({
                     tx_id: txId,

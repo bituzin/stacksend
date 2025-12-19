@@ -92,6 +92,13 @@ export async function handleSTXTransferWebhook(req: Request, res: Response): Pro
 
                 console.log(`📋 Parsed ${recipients.length} recipient(s), total: ${totalAmount} µSTX`);
 
+                // Check if this transaction was already processed
+                const alreadyProcessed = await db.transferExists(txId);
+                if (alreadyProcessed) {
+                    console.log(`⏭️  Transaction ${txId.slice(0, 12)}... already processed, skipping`);
+                    continue;
+                }
+
                 // Save transfer to database
                 const transferId = await db.insertTransfer({
                     tx_id: txId,

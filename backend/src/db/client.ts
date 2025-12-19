@@ -107,6 +107,12 @@ class DatabaseClient {
         return result.rows[0]?.id;
     }
 
+    async transferExists(txId: string): Promise<boolean> {
+        const query = 'SELECT id FROM transfers WHERE tx_id = $1';
+        const result = await this.pool.query(query, [txId]);
+        return result.rows.length > 0;
+    }
+
     // Recipient methods
     async insertRecipient(params: {
         transfer_id: number;
