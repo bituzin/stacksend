@@ -71,6 +71,14 @@ function App() {
 
   console.log('🎯 Rendering main app');
 
+  // Scroll to top when entering app to ensure proper render
+  useEffect(() => {
+    if (!showLanding && isAuthenticated) {
+      console.log('📜 Scrolling to top');
+      window.scrollTo(0, 0);
+    }
+  }, [showLanding, isAuthenticated]);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       {/* Header */}
