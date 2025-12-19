@@ -61,15 +61,15 @@ function App() {
     setShowLanding(true);
   }, []);
 
-  // Show landing page (with Connect Wallet or Go to App button)
-  if (showLanding) {
+  console.log('🔍 App render:', { showLanding, isAuthenticated, stxAddress: stxAddress?.slice(0, 8) });
+
+  // Show landing page if explicitly requested OR if not authenticated
+  if (showLanding || !isAuthenticated) {
+    console.log('📄 Rendering WalletConnect because:', { showLanding, isAuthenticated });
     return <WalletConnect key={isAuthenticated ? 'authenticated' : 'unauthenticated'} onEnterApp={handleEnterApp} />;
   }
 
-  // If not authenticated (somehow got here), redirect to landing
-  if (!isAuthenticated) {
-    return <WalletConnect key="fallback" onEnterApp={handleEnterApp} />;
-  }
+  console.log('🎯 Rendering main app');
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
