@@ -67,7 +67,8 @@ function App() {
   useEffect(() => {
     if (!showLanding && !isAuthenticated && stxAddress === null) {
       console.log('🔌 User disconnected, showing landing');
-      setShowLanding(true);
+      // Defer state update to avoid React error #310
+      setTimeout(() => setShowLanding(true), 0);
     }
   }, [isAuthenticated, showLanding, stxAddress]);
 
