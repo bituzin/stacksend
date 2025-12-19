@@ -43,6 +43,7 @@ function App() {
   };
 
   const handleEnterApp = () => {
+    console.log('📱 App.handleEnterApp called, setting showLanding to false');
     setShowLanding(false);
   };
 

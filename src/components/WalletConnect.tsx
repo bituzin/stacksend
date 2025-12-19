@@ -45,8 +45,11 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onEnterApp }) => {
 
 
     const handleEnterApp = () => {
+        console.log('🚀 Go to App clicked', { onEnterApp: !!onEnterApp, isAuthenticated });
         if (onEnterApp) {
             onEnterApp();
+        } else {
+            console.error('⚠️ onEnterApp callback is undefined!');
         }
     };
 
