@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { RecipientTable } from './components/RecipientTable';
 import { WalletConnect } from './components/WalletConnect';
 import { NetworkToggle } from './components/NetworkToggle';
@@ -42,14 +42,14 @@ function App() {
     applyTheme(newTheme);
   };
 
-  const handleEnterApp = () => {
+  const handleEnterApp = useCallback(() => {
     console.log('📱 App.handleEnterApp called, setting showLanding to false');
     setShowLanding(false);
-  };
+  }, []);
 
-  const handleGoToLanding = () => {
+  const handleGoToLanding = useCallback(() => {
     setShowLanding(true);
-  };
+  }, []);
 
   // Show landing page (with Connect Wallet or Go to App button)
   if (showLanding) {
