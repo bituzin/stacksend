@@ -51,20 +51,21 @@ export function TelegramLinkWidget({ walletAddress }: TelegramLinkWidgetProps) {
     const isTelegramLinked = user?.telegram_chat_id;
 
     return (
-        <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 shadow-xl">
+        <div className="card p-6 shadow-xl">
             <div className="flex items-start justify-between mb-4">
                 <div>
-                    <h3 className="text-xl font-bold text-white mb-1">Telegram Notifications</h3>
-                    <p className="text-sm text-gray-400">Get instant alerts when you receive transfers</p>
+                    <h3 className="text-xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Telegram Notifications</h3>
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Get instant alerts when you receive transfers</p>
                 </div>
                 {isTelegramLinked && (
                     <button
                         onClick={toggleNotifications}
                         disabled={loading}
-                        className={`p-2 rounded-lg transition-all ${user.notification_enabled
-                            ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
-                            : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'
-                            }`}
+                        className="p-2 rounded-lg transition-all"
+                        style={{
+                            backgroundColor: user.notification_enabled ? 'var(--accent-orange-light)' : 'var(--bg-tertiary)',
+                            color: user.notification_enabled ? 'var(--accent-orange)' : 'var(--text-muted)'
+                        }}
                         title={user.notification_enabled ? 'Notifications enabled' : 'Notifications disabled'}
                     >
                         {user.notification_enabled ? (
@@ -77,48 +78,48 @@ export function TelegramLinkWidget({ walletAddress }: TelegramLinkWidgetProps) {
             </div>
 
             {error && (
-                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+                <div className="mb-4 p-3 rounded-lg text-sm" style={{ backgroundColor: 'var(--error-light)', border: '1px solid var(--error)', color: 'var(--error)' }}>
                     {error}
                 </div>
             )}
 
             {isTelegramLinked ? (
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                    <div className="flex items-center justify-between p-4 rounded-lg" style={{ backgroundColor: 'var(--success-light)', border: `1px solid var(--success)` }}>
                         <div>
                             <div className="flex items-center gap-2 mb-1">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                <span className="text-green-400 font-semibold">Connected</span>
+                                <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--success)' }} />
+                                <span className="font-semibold" style={{ color: 'var(--success)' }}>Connected</span>
                             </div>
                             {user.telegram_username && (
-                                <p className="text-sm text-gray-400">@{user.telegram_username}</p>
+                                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>@{user.telegram_username}</p>
                             )}
                         </div>
                         <div className="text-right">
-                            <span className={`text-sm ${user.notification_enabled ? 'text-blue-400' : 'text-gray-500'}`}>
+                            <span className="text-sm" style={{ color: user.notification_enabled ? 'var(--accent-orange)' : 'var(--text-muted)' }}>
                                 {user.notification_enabled ? 'Notifications ON' : 'Notifications OFF'}
                             </span>
                         </div>
                     </div>
 
-                    <div className="p-4 bg-gray-800/50 rounded-lg">
-                        <p className="text-sm text-gray-300 mb-2">
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                        <p className="text-sm mb-2" style={{ color: 'var(--text-primary)' }}>
                             ✅ You'll receive notifications when you receive STX or fungible tokens via StackSend
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                             Connected on {new Date(user.created_at).toLocaleDateString()}
                         </p>
                     </div>
                 </div>
             ) : (
                 <div className="space-y-4">
-                    <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                        <p className="text-sm text-blue-300 mb-3">
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--accent-orange-light)', border: `1px solid var(--accent-orange)` }}>
+                        <p className="text-sm mb-3" style={{ color: 'var(--accent-orange)' }}>
                             Link your Telegram to receive instant notifications when you receive transfers!
                         </p>
-                        <ol className="text-sm text-gray-300 space-y-2 ml-4 list-decimal">
+                        <ol className="text-sm space-y-2 ml-4 list-decimal" style={{ color: 'var(--text-primary)' }}>
                             <li>Open Telegram and search for our bot</li>
-                            <li>Send <code className="px-2 py-1 bg-gray-800 rounded text-blue-400">/start</code></li>
+                            <li>Send <code className="px-2 py-1 rounded" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--accent-orange)' }}>/start</code></li>
                             <li>Follow the instructions to link your wallet</li>
                         </ol>
                     </div>
@@ -127,7 +128,7 @@ export function TelegramLinkWidget({ walletAddress }: TelegramLinkWidgetProps) {
                         href={`https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'stacksendbot'}?start=${walletAddress}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-blue-500/50"
+                        className="btn-primary flex items-center justify-center gap-2 w-full"
                     >
                         Open Telegram Bot
                         <ExternalLink className="w-4 h-4" />
