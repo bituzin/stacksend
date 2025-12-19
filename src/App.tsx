@@ -80,7 +80,7 @@ function App() {
   }, [showLanding, isAuthenticated]);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <div key="main-app" className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       {/* Header */}
       <header
         className="sticky top-0 z-50 backdrop-blur-md border-b"
