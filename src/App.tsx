@@ -15,10 +15,11 @@ function App() {
   const [showLanding, setShowLanding] = useState(true);
   const { isAuthenticated, stxAddress, disconnect, network } = useAuth();
 
-  // Determine if we're on mainnet based on network chainId
+  // Determine contract address based on network
   const isMainnet = network?.chainId !== 2147483648; // testnet chainId
   const contractAddress = getContractAddress(isMainnet);
 
+  // Theme management
   useEffect(() => {
     const saved = localStorage.getItem('theme') ||
       (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -42,8 +43,21 @@ function App() {
     applyTheme(newTheme);
   };
 
+  // Automatically hide landing if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      setShowLanding(false);
+    }
+  }, [isAuthenticated]);
+
+  // If authentication state changes to false, show landing
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setShowLanding(true);
+    }
+  }, [isAuthenticated]);
+
   const handleEnterApp = useCallback(() => {
-    console.log('📱 App.handleEnterApp called, setting showLanding to false');
     setShowLanding(false);
   }, []);
 
@@ -51,26 +65,19 @@ function App() {
     setShowLanding(true);
   }, []);
 
-  console.log('🔍 App render:', { showLanding, isAuthenticated, stxAddress: stxAddress?.slice(0, 8) });
-
-  // Show landing page if explicitly requested
-  if (showLanding) {
-    console.log('📄 Rendering WalletConnect');
-    return <WalletConnect onEnterApp={handleEnterApp} />;
-  }
-
-  // User clicked "Go to App" - show the app even if auth state hasn't updated yet
-  // The disconnect button will handle logout
-  console.log('🎯 Rendering main app');
-
-  // Scroll to top when entering app to ensure proper render
+  // Scroll to top when entering the app
   useEffect(() => {
     if (!showLanding && isAuthenticated) {
-      console.log('📜 Scrolling to top');
       window.scrollTo(0, 0);
     }
   }, [showLanding, isAuthenticated]);
 
+  // Render landing if showLanding is true
+  if (showLanding || !isAuthenticated) {
+    return <WalletConnect onEnterApp={handleEnterApp} />;
+  }
+
+  // Render main app only when authenticated and not showing landing
   return (
     <div key="main-app" className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       {/* Header */}
