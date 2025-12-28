@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Wallet, ArrowRight, Zap, Shield, Users, Loader2, Layers, Sun, Moon, LogIn } from 'lucide-react';
+import { ArrowRight, Zap, Shield, Users, Loader2, Layers, Sun, Moon, LogIn, Bitcoin } from 'lucide-react';
 
 interface WalletConnectProps {
     onEnterApp?: () => void;
 }
 
+type WalletTypeSelection = 'stacks' | 'bitcoin' | null;
+
 export const WalletConnect: React.FC<WalletConnectProps> = ({ onEnterApp }) => {
-    const { authenticate, loading, isAuthenticated, stxAddress } = useAuth();
+    const { authenticate, connectBitcoin, loading, isAuthenticated, stxAddress, btcAddress, walletType, isReownConfigured } = useAuth();
     const [error, setError] = useState<string | null>(null);
     const [isConnecting, setIsConnecting] = useState(false);
     const [theme, setTheme] = useState('light');
+    const [selectedWalletType, setSelectedWalletType] = useState<WalletTypeSelection>(null);
 
     useEffect(() => {
         const saved = localStorage.getItem('theme') ||
@@ -30,19 +33,31 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onEnterApp }) => {
         }
     };
 
-    const handleConnect = async () => {
+    const handleConnectStacks = async () => {
         setError(null);
         setIsConnecting(true);
         try {
             await authenticate();
         } catch (err: any) {
-            console.error('Connection error:', err);
-            setError(err?.message || 'Failed to connect wallet. Please try again.');
+            console.error('Stacks connection error:', err);
+            setError(err?.message || 'Failed to connect Stacks wallet. Please try again.');
         } finally {
             setIsConnecting(false);
         }
     };
 
+    const handleConnectBitcoin = async () => {
+        setError(null);
+        setIsConnecting(true);
+        try {
+            await connectBitcoin();
+        } catch (err: any) {
+            console.error('Bitcoin connection error:', err);
+            setError(err?.message || 'Failed to connect Bitcoin wallet. Please try again.');
+        } finally {
+            setIsConnecting(false);
+        }
+    };
 
     const handleEnterApp = () => {
         console.log('🚀 Go to App clicked', { onEnterApp: !!onEnterApp, isAuthenticated });
@@ -51,6 +66,11 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onEnterApp }) => {
         } else {
             console.error('⚠️ onEnterApp callback is undefined!');
         }
+    };
+
+    const handleBack = () => {
+        setSelectedWalletType(null);
+        setError(null);
     };
 
     return (
@@ -95,67 +115,139 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onEnterApp }) => {
                     Send STX and SIP-010 tokens to multiple recipients in a single transaction.
                 </p>
 
-                {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-                    {isAuthenticated ? (
-                        <>
-                            {/* Authenticated user - show Go to App button */}
+                {/* Main Content Area */}
+                {isAuthenticated ? (
+                    /* Already Connected - Show Go to App */
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                        <button
+                            onClick={handleEnterApp}
+                            className="btn-primary text-lg px-8 py-4"
+                            style={{
+                                boxShadow: '0 10px 40px -10px rgba(249, 115, 22, 0.5)',
+                            }}
+                        >
+                            <LogIn className="w-5 h-5" />
+                            <span>Go to App</span>
+                            <ArrowRight className="w-5 h-5" />
+                        </button>
+                        <div
+                            className="flex items-center gap-2 px-6 py-3 rounded-xl"
+                            style={{ backgroundColor: 'var(--bg-tertiary)' }}
+                        >
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            <span className="text-sm font-mono" style={{ color: 'var(--text-secondary)' }}>
+                                {walletType === 'stacks' && stxAddress && `${stxAddress.slice(0, 8)}...${stxAddress.slice(-6)}`}
+                                {walletType === 'bitcoin' && btcAddress && `${btcAddress.slice(0, 8)}...${btcAddress.slice(-6)}`}
+                            </span>
+                            <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-muted)' }}>
+                                {walletType === 'stacks' ? 'Stacks' : 'Bitcoin'}
+                            </span>
+                        </div>
+                    </div>
+                ) : selectedWalletType === null ? (
+                    /* Step 1: Wallet Type Selection */
+                    <>
+                        <p className="text-base mb-6" style={{ color: 'var(--text-secondary)' }}>
+                            Choose your wallet type to connect
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto mb-8">
+                            {/* Stacks Wallet Option */}
                             <button
-                                onClick={handleEnterApp}
-                                className="btn-primary text-lg px-8 py-4"
-                                style={{
-                                    boxShadow: '0 10px 40px -10px rgba(249, 115, 22, 0.5)',
-                                }}
+                                onClick={() => setSelectedWalletType('stacks')}
+                                className="card card-hover p-6 text-center transition-all hover:scale-105"
+                                style={{ backgroundColor: 'var(--bg-secondary)' }}
                             >
-                                <LogIn className="w-5 h-5" />
-                                <span>Go to App</span>
-                                <ArrowRight className="w-5 h-5" />
+                                <div
+                                    className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4"
+                                    style={{
+                                        backgroundColor: 'var(--accent-orange-light)',
+                                        color: 'var(--accent-orange)'
+                                    }}
+                                >
+                                    <Layers className="w-8 h-8" />
+                                </div>
+                                <h3 className="font-semibold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
+                                    Stacks Wallet
+                                </h3>
+                                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                                    Connect with Leather, Xverse, or other Stacks wallets
+                                </p>
                             </button>
-                            <div
-                                className="flex items-center gap-2 px-6 py-3 rounded-xl"
-                                style={{ backgroundColor: 'var(--bg-tertiary)' }}
-                            >
-                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                <span className="text-sm font-mono" style={{ color: 'var(--text-secondary)' }}>
-                                    {stxAddress?.slice(0, 8)}...{stxAddress?.slice(-6)}
-                                </span>
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            {/* Not authenticated - show Connect Wallet button */}
+
+                            {/* Bitcoin Wallet Option */}
                             <button
-                                onClick={handleConnect}
-                                disabled={isConnecting || loading}
-                                className="btn-primary text-lg px-8 py-4"
-                                style={{
-                                    boxShadow: '0 10px 40px -10px rgba(249, 115, 22, 0.5)',
-                                }}
+                                onClick={() => setSelectedWalletType('bitcoin')}
+                                disabled={!isReownConfigured}
+                                className="card card-hover p-6 text-center transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                                style={{ backgroundColor: 'var(--bg-secondary)' }}
                             >
-                                {isConnecting || loading ? (
-                                    <>
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                        <span>Connecting...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Wallet className="w-5 h-5" />
-                                        <span>Connect Wallet</span>
-                                        <ArrowRight className="w-5 h-5" />
-                                    </>
+                                <div
+                                    className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4"
+                                    style={{
+                                        backgroundColor: 'rgba(247, 147, 26, 0.1)',
+                                        color: '#F7931A'
+                                    }}
+                                >
+                                    <Bitcoin className="w-8 h-8" />
+                                </div>
+                                <h3 className="font-semibold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
+                                    Bitcoin Wallet
+                                </h3>
+                                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                                    Connect with Leather, Xverse, or other Bitcoin wallets
+                                </p>
+                                {!isReownConfigured && (
+                                    <p className="text-xs mt-2" style={{ color: 'var(--error)' }}>
+                                        Configuration required
+                                    </p>
                                 )}
                             </button>
-                            <a
-                                href="https://stacks.co"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="btn-secondary text-lg px-8 py-4"
-                            >
-                                Learn about Stacks
-                            </a>
-                        </>
-                    )}
-                </div>
+                        </div>
+                        <a
+                            href="https://stacks.co"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn-secondary text-base px-6 py-3"
+                        >
+                            Learn about Stacks
+                        </a>
+                    </>
+                ) : (
+                    /* Step 2: Connect Selected Wallet Type */
+                    <div className="flex flex-col gap-4 max-w-md mx-auto mb-8">
+                        <button
+                            onClick={selectedWalletType === 'stacks' ? handleConnectStacks : handleConnectBitcoin}
+                            disabled={isConnecting || loading}
+                            className="btn-primary text-lg px-8 py-4"
+                            style={{
+                                boxShadow: '0 10px 40px -10px rgba(249, 115, 22, 0.5)',
+                            }}
+                        >
+                            {isConnecting || loading ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <span>Connecting...</span>
+                                </>
+                            ) : (
+                                <>
+                                    {selectedWalletType === 'stacks' ? (
+                                        <Layers className="w-5 h-5" />
+                                    ) : (
+                                        <Bitcoin className="w-5 h-5" />
+                                    )}
+                                    <span>Connect {selectedWalletType === 'stacks' ? 'Stacks' : 'Bitcoin'} Wallet</span>
+                                    <ArrowRight className="w-5 h-5" />
+                                </>
+                            )}
+                        </button>
+                        <button
+                            onClick={handleBack}
+                            className="btn-secondary text-base px-6 py-3"
+                        >
+                            Back to wallet selection
+                        </button>
+                    </div>
+                )}
 
                 {/* Error Message */}
                 {error && (
@@ -168,7 +260,9 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onEnterApp }) => {
                     >
                         <p className="text-sm font-medium">{error}</p>
                         <p className="text-xs mt-2 opacity-80">
-                            Make sure you have a Stacks wallet installed (e.g., Leather or Xverse).
+                            {selectedWalletType === 'stacks'
+                                ? 'Make sure you have a Stacks wallet installed (e.g., Leather or Xverse).'
+                                : 'Make sure you have a Bitcoin wallet installed and Reown is configured.'}
                         </p>
                     </div>
                 )}
@@ -241,3 +335,4 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onEnterApp }) => {
         </div>
     );
 };
+
