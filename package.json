@@ -12,6 +12,8 @@
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@hookform/resolvers": "^5.2.2",
+    "@reown/appkit": "^1.8.15",
+    "@reown/appkit-adapter-bitcoin": "^1.8.15",
     "@stacks/auth": "^7.3.0",
     "@stacks/connect": "^8.2.3",
     "@stacks/network": "^7.2.0",
