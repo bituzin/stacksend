@@ -194,7 +194,7 @@ function App() {
       >
         <div className="max-w-6xl mx-auto px-4 text-center">
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Built on Stacks • Secured by Bitcoin
+            Built on Stacks • Secured by Bitcoin • L2
           </p>
         </div>
       </footer>
